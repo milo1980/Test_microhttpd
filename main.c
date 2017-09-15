@@ -29,7 +29,7 @@ const char *servererrorpage =
     "<html><head><title>libmicrohttpd server</title></head>\
      <body>An internal server error has occured.</body></html>";
 
-const char *createTerminalPage =
+const char *createTerminalPostPage =
     "<html><head><title>libmicrohttpd server</title></head>\n\
     <body>\n\
     <p>Current number of terminals : %s </p>\n\
@@ -37,6 +37,24 @@ const char *createTerminalPage =
     <p>   Create terminal</p>\n\
     <p>-------------------------</p>\n\
     <form action=\"/terminalpost\" method=\"post\" enctype=\"multipart/form-data\">\n\
+      <input type=\"checkbox\" name=\"cardType\" value=\"Visa\" checked> Visa Card<br>\n\
+      <input type=\"checkbox\" name=\"cardType\" value=\"Master\" checked> Master Card<br>\n\
+      <input type=\"checkbox\" name=\"cardType\" value=\"EFTPOS\" checked> EFTPOS<br>\n\
+      <p></p>\n\
+      <input type=\"checkbox\" name=\"TransactionType\" value=\"Cheque\" checked> Cheque<br>\n\
+      <input type=\"checkbox\" name=\"TransactionType\" value=\"Savings\" checked> Savings<br>\n\
+      <input type=\"checkbox\" name=\"TransactionType\" value=\"Credit\" checked> Credit<br>\n\
+      <input type=\"submit\" value=\"Submit\">\n\
+    </form></body></html>";
+
+const char *createTerminalJsonPage =
+    "<html><head><title>libmicrohttpd server</title></head>\n\
+    <body>\n\
+    <p>Current number of terminals : %s </p>\n\
+    <p></p>\n\
+    <p>   Create terminal</p>\n\
+    <p>-------------------------</p>\n\
+    <form action=\"/terminalpost\" enctype=\"application/json\">\n\
       <input type=\"checkbox\" name=\"cardType\" value=\"Visa\" checked> Visa Card<br>\n\
       <input type=\"checkbox\" name=\"cardType\" value=\"Master\" checked> Master Card<br>\n\
       <input type=\"checkbox\" name=\"cardType\" value=\"EFTPOS\" checked> EFTPOS<br>\n\
@@ -99,6 +117,7 @@ struct connection_info_struct
 static unsigned int nr_of_uploading_clients = 0;
 static unsigned int nr_of_terminals = 0;
 static terminalinfo_t terminalList[100];
+static char url_args[100][64];
 
 static int send_page(struct MHD_Connection *connection, const char *page,
     int status_code)
@@ -170,6 +189,12 @@ static void request_completed(void *cls, struct MHD_Connection *connection,
 
   free(con_info);
   *con_cls = NULL;
+}
+
+static int get_url_args(void *cls, enum MHD_ValueKind kind, const char *key,
+    const char* value)
+{
+  return 0;
 }
 
 static int answer_to_connection(void * cls, struct MHD_Connection * connection,
@@ -249,8 +274,16 @@ static int answer_to_connection(void * cls, struct MHD_Connection * connection,
         if (0 == strcmp(url, "create_terminals"))
         {
           /*create and send responses*/
-          snprintf(pageBuffer, sizeof(pageBuffer), createTerminalPage,
+#if 0
+          snprintf(pageBuffer, sizeof(pageBuffer), createTerminalPostPage,
               itoa(nr_of_terminals, tempString, 10));
+#else
+          MHD_get_connection_values (connection, MHD_GET_ARGUMENT_KIND,
+              get_url_args, url_args);
+          printf("\t%s",url_args[0]);
+          snprintf(pageBuffer, sizeof(pageBuffer), createTerminalJsonPage,
+              itoa(nr_of_terminals, tempString, 10));
+#endif
         }
         else if (0 == strcmp(url, "list_terminals"))
         {
@@ -304,10 +337,11 @@ static int answer_to_connection(void * cls, struct MHD_Connection * connection,
   }
   else
   {
+    /* unexpected method */
     snprintf(pageBuffer, sizeof(pageBuffer), errorPage);
     return send_page(connection, pageBuffer, MHD_HTTP_OK);
   }
-  return MHD_NO; /* unexpected method */
+  return MHD_NO;
 }
 
 int main(int argc, char ** argv)
