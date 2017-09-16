@@ -25,5 +25,9 @@ extern const char * basePage;
 extern const char * badPage;
 extern const char * submitPage;
 extern const char * errorPage;
+extern const char * askIdPage;
+extern const char* answerIdOkPage;
+extern const char* answerIdNokPage;
+
 
 #endif /* MICROHTTP_CONFIG_H_ */

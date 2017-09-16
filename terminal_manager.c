@@ -6,6 +6,7 @@
  */
 #include <string.h>
 #include <stddef.h>
+#include <stdio.h>
 #include "terminal_manager.h"
 
 /*private variable declaration*/
@@ -56,5 +57,29 @@ void TerminalList_Get(terminalinfo_t * const terminal, unsigned int index)
 unsigned int TerminalList_GetNumber()
 {
   return nr_of_terminals;
+}
+
+void * TerminalList_GetFromID(unsigned int id)
+{
+  void * ret_value;
+  int i;
+
+  ret_value = NULL;
+  if (nr_of_terminals == 0)
+  {
+    /*nothing to do*/
+  }
+  else
+  {
+    for (i = 0; i<nr_of_terminals; i++)
+    {
+      if (terminalList[i].id == id)
+      {
+        ret_value = &terminalList[i];
+      }
+    }
+  }
+
+  return ret_value;
 }
 

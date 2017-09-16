@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <microhttpd.h>
 
 #include "microhttp_config.h"
@@ -25,11 +26,15 @@ struct connection_info_struct
   terminalinfo_t terminal;
   int cardIndex;
   int transactionIndex;
+  bool id_request;
+  unsigned int id;
+  terminalinfo_t * pTerminal;
   const char *answerstring;
   int answercode;
 };
 
 static unsigned int nr_of_uploading_clients = 0;
+static char pageBuffer[2048] = "";
 #if 0
 static char url_args[1024] = "";
 #endif
@@ -55,11 +60,14 @@ static int iterate_post(void *coninfo_cls, enum MHD_ValueKind kind,
     const char *transfer_encoding, const char *data, uint64_t off, size_t size)
 {
   struct connection_info_struct *con_info = coninfo_cls;
+  unsigned int terminnum = 0;
+  static char tempstring[64] = "";
+  static char tempstring2[64] = "";
 
   con_info->answerstring = servererrorpage;
   con_info->answercode = MHD_HTTP_INTERNAL_SERVER_ERROR;
 
-  printf("\tkey: %s\tname: %s\n", key, data);
+  printf("\tkey: %s\tname: %s", key, data);
   if (0 == strcmp(key, "cardType"))
   {
     strncpy(con_info->terminal.cardsSupported[con_info->cardIndex++], data, 64);
@@ -70,11 +78,51 @@ static int iterate_post(void *coninfo_cls, enum MHD_ValueKind kind,
         con_info->terminal.transactionsSupported[con_info->transactionIndex++],
         data, 64);
   }
+  else if (0 == strcmp(key, "id"))
+  {
+    if (0 != strcmp(data,""))
+    {
+      con_info->id_request = true;
+      con_info->id = atoi(data);
+      con_info->pTerminal = TerminalList_GetFromID(con_info->id);
+      if (con_info->pTerminal != NULL)
+      {
+        printf("FOUND");
+      }
+      else
+      {
+        printf("NOT FOUND");
+      }
+    }
+  }
   else
   {
+    /*nothing to do*/
   }
+  printf("\n");
 
-  con_info->answerstring = completepage;
+  if (con_info->id_request == false)
+  {
+    snprintf(pageBuffer, sizeof(pageBuffer), completepage);
+  }
+  else
+  {
+    if (NULL != con_info->pTerminal)
+    {
+      terminnum = TerminalList_GetNumber();
+      snprintf(pageBuffer, sizeof(pageBuffer), answerIdOkPage, itoa(terminnum,tempstring,10),
+          itoa(con_info->pTerminal->id, tempstring2, 10),
+          con_info->pTerminal->cardsSupported[0],con_info->pTerminal->cardsSupported[1],con_info->pTerminal->cardsSupported[2],
+          con_info->pTerminal->transactionsSupported[0],con_info->pTerminal->transactionsSupported[1],
+          con_info->pTerminal->transactionsSupported[2]);
+    }
+    else
+    {
+      terminnum = TerminalList_GetNumber();
+      snprintf(pageBuffer, sizeof(pageBuffer), answerIdNokPage, itoa(terminnum,tempstring,10));
+    }
+  }
+  con_info->answerstring = pageBuffer;
   con_info->answercode = MHD_HTTP_OK;
 
   return MHD_YES;
@@ -114,9 +162,16 @@ void microhttp_requestCompleted(void *cls, struct MHD_Connection *connection,
       nr_of_uploading_clients--;
     }
 
-    con_info->terminal.id = (unsigned int) rand();
-    printf("POST\t%s\tid: %d\n", "DONE", con_info->terminal.id);
-    TerminalList_Add(&con_info->terminal);
+    if (con_info->id_request == false)
+    {
+      con_info->terminal.id = (unsigned int) rand();
+      printf("POST\t%s\tid: %d\n", "DONE", con_info->terminal.id);
+      TerminalList_Add(&con_info->terminal);
+    }
+    else
+    {
+
+    }
   }
 
   free(con_info);
@@ -128,7 +183,6 @@ int microhttp_answerToConnection(void * cls, struct MHD_Connection * connection,
     const char * upload_data, size_t * upload_data_size, void ** con_cls)
 {
   size_t i;
-  static char pageBuffer[2048] = "";
   static char terminalListString[1024] = "";
   static char tempString[512] = "";
   static char tempString2[64] = "";
@@ -154,6 +208,8 @@ int microhttp_answerToConnection(void * cls, struct MHD_Connection * connection,
     con_info->cardIndex = 0;
     con_info->transactionIndex = 0;
     con_info->terminal.id = 0;
+    con_info->id_request = false;
+    con_info->id = 0;
 
     if (0 == strcmp(method, "POST"))
     {
@@ -235,6 +291,12 @@ int microhttp_answerToConnection(void * cls, struct MHD_Connection * connection,
           /*create and send responses*/
           snprintf(pageBuffer, sizeof(pageBuffer), listTerminalPage,
               itoa(terminnum, tempString, 10), terminalListString);
+        }
+        else if (0 == strcmp(url,"ask_id"))
+        {
+          terminnum = TerminalList_GetNumber();
+          snprintf(pageBuffer, sizeof(pageBuffer), askIdPage,
+              itoa(terminnum, tempString, 10));
         }
         else
         {

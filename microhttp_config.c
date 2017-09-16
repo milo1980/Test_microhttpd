@@ -63,9 +63,9 @@ const char * listTerminalPage =
      </body></html>";
 
 const char * oneTerminal =
-    "<p>id:%s</p>\n\
-     <p>Cards Supported: %s %s %s</p>\n\
-     <p>Transactions Supported: %s %s %s</p>\n\
+    "ID:%s<br>\n\
+     Cards Supported: %s %s %s<br>\n\
+     Transactions Supported: %s %s %s<br>\n\
      <p>----</p>";
 
 const char * basePage =
@@ -83,4 +83,31 @@ const char * submitPage =
 const char * errorPage =
     "<html><head><title>libmicrohttpd server</title>\n\
      </head><body>Error!</body></html>";
+
+const char* askIdPage =
+    "<html><head><title>libmicrohttpd server</title></head>\n\
+     <body>\n\
+     <p>Current number of terminals : %s </p>\n\
+     <p>Enter Terminal ID</p>\
+     <form action=\"/idpost\" method=\"post\">\
+       <input name=\"id\" type=\"text\"\
+       <input type=\"submit\" value=\" id no. \"></form>\
+     </body></html>";
+
+const char* answerIdOkPage =
+    "<html><head><title>libmicrohttpd server</title></head>\n\
+     <body>\n\
+     <p>Current number of terminals : %s </p>\n\
+     <p>Terminal Info</p>\
+     ID:%s<br>\n\
+     Cards Supported: %s %s %s<br>\n\
+     Transactions Supported: %s %s %s<br>\n\
+     </body></html>";
+
+const char* answerIdNokPage =
+    "<html><head><title>libmicrohttpd server</title></head>\n\
+     <body>\n\
+     <p>Current number of terminals : %s </p>\n\
+     <p>Terminal Not Found!</p>\
+     </body></html>";
 

@@ -20,6 +20,7 @@ typedef struct
 extern void TerminalList_Init();
 extern void TerminalList_Add(terminalinfo_t * const terminal);
 extern void TerminalList_Get(terminalinfo_t * const terminal, unsigned int index);
+extern void * TerminalList_GetFromID(unsigned int id);
 extern unsigned int TerminalList_GetNumber();
 
 
