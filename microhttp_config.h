@@ -29,5 +29,4 @@ extern const char * askIdPage;
 extern const char* answerIdOkPage;
 extern const char* answerIdNokPage;
 
-
 #endif /* MICROHTTP_CONFIG_H_ */

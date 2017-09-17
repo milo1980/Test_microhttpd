@@ -23,7 +23,7 @@ const char *createTerminalPostPage =
     <p>Current number of terminals : %s </p>\n\
     <p></p>\n\
     <p>   Create terminal</p>\n\
-    <p>-------------------------</p>\n\
+    -------------------------<br>\n\
     <form action=\"/terminalpost\" method=\"post\" enctype=\"multipart/form-data\">\n\
       <input type=\"checkbox\" name=\"cardType\" value=\"Visa\" checked> Visa Card<br>\n\
       <input type=\"checkbox\" name=\"cardType\" value=\"Master\" checked> Master Card<br>\n\
@@ -58,7 +58,7 @@ const char * listTerminalPage =
      <body>\n\
      <p>Current number of terminals : %s </p>\n\
      <p>List of Terminals</p>\n\
-     <p>-------------------------</p>\n\
+     -------------------------<br>\n\
      %s\n\
      </body></html>";
 
@@ -66,7 +66,7 @@ const char * oneTerminal =
     "ID:%s<br>\n\
      Cards Supported: %s %s %s<br>\n\
      Transactions Supported: %s %s %s<br>\n\
-     <p>----</p>";
+     ----<br>";
 
 const char * basePage =
     "<html><head><title>libmicrohttpd server</title>\n\

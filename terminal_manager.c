@@ -4,6 +4,7 @@
  *  Created on: 16/09/2017
  *      Author: Milorad
  */
+#include <stdint.h>
 #include <string.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -11,11 +12,11 @@
 
 /*private variable declaration*/
 static terminalinfo_t terminalList[100];
-static unsigned int nr_of_terminals = 0;
+static uint16_t nr_of_terminals = 0;
 
 void TerminalList_Init()
 {
-  int i;
+  uint16_t i;
 
   for (i = 0; i < MAX_NO_OF_TERMINALS; i++)
   {
@@ -27,6 +28,7 @@ void TerminalList_Init()
     strcpy(terminalList[i].transactionsSupported[1], "");
     strcpy(terminalList[i].transactionsSupported[2], "");
   }
+  nr_of_terminals = 0;
 }
 
 void TerminalList_Add(terminalinfo_t * const terminal)
@@ -62,7 +64,7 @@ unsigned int TerminalList_GetNumber()
 void * TerminalList_GetFromID(unsigned int id)
 {
   void * ret_value;
-  int i;
+  uint16_t i;
 
   ret_value = NULL;
   if (nr_of_terminals == 0)
@@ -71,7 +73,7 @@ void * TerminalList_GetFromID(unsigned int id)
   }
   else
   {
-    for (i = 0; i<nr_of_terminals; i++)
+    for (i = 0; i < nr_of_terminals; i++)
     {
       if (terminalList[i].id == id)
       {

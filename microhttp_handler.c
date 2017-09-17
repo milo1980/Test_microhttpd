@@ -5,7 +5,7 @@
  *      Author: Milorad
  */
 #include <sys/types.h>
-//#include <sys/select.h>
+#include <stdint.h>
 #include <winsock2.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,24 +16,21 @@
 #include "microhttp_config.h"
 #include "terminal_manager.h"
 
-
-
-
 struct connection_info_struct
 {
   int connectiontype;
   struct MHD_PostProcessor *postprocessor;
   terminalinfo_t terminal;
-  int cardIndex;
-  int transactionIndex;
+  uint16_t cardIndex;
+  uint16_t transactionIndex;
   bool id_request;
-  unsigned int id;
+  uint32_t id;
   terminalinfo_t * pTerminal;
   const char *answerstring;
   int answercode;
 };
 
-static unsigned int nr_of_uploading_clients = 0;
+static uint16_t nr_of_uploading_clients = 0;
 static char pageBuffer[2048] = "";
 #if 0
 static char url_args[1024] = "";
@@ -60,7 +57,7 @@ static int iterate_post(void *coninfo_cls, enum MHD_ValueKind kind,
     const char *transfer_encoding, const char *data, uint64_t off, size_t size)
 {
   struct connection_info_struct *con_info = coninfo_cls;
-  unsigned int terminnum = 0;
+  uint16_t terminnum = 0;
   static char tempstring[64] = "";
   static char tempstring2[64] = "";
 
@@ -80,7 +77,7 @@ static int iterate_post(void *coninfo_cls, enum MHD_ValueKind kind,
   }
   else if (0 == strcmp(key, "id"))
   {
-    if (0 != strcmp(data,""))
+    if (0 != strcmp(data, ""))
     {
       con_info->id_request = true;
       con_info->id = atoi(data);
@@ -110,16 +107,21 @@ static int iterate_post(void *coninfo_cls, enum MHD_ValueKind kind,
     if (NULL != con_info->pTerminal)
     {
       terminnum = TerminalList_GetNumber();
-      snprintf(pageBuffer, sizeof(pageBuffer), answerIdOkPage, itoa(terminnum,tempstring,10),
+      snprintf(pageBuffer, sizeof(pageBuffer), answerIdOkPage,
+          itoa(terminnum, tempstring, 10),
           itoa(con_info->pTerminal->id, tempstring2, 10),
-          con_info->pTerminal->cardsSupported[0],con_info->pTerminal->cardsSupported[1],con_info->pTerminal->cardsSupported[2],
-          con_info->pTerminal->transactionsSupported[0],con_info->pTerminal->transactionsSupported[1],
+          con_info->pTerminal->cardsSupported[0],
+          con_info->pTerminal->cardsSupported[1],
+          con_info->pTerminal->cardsSupported[2],
+          con_info->pTerminal->transactionsSupported[0],
+          con_info->pTerminal->transactionsSupported[1],
           con_info->pTerminal->transactionsSupported[2]);
     }
     else
     {
       terminnum = TerminalList_GetNumber();
-      snprintf(pageBuffer, sizeof(pageBuffer), answerIdNokPage, itoa(terminnum,tempstring,10));
+      snprintf(pageBuffer, sizeof(pageBuffer), answerIdNokPage,
+          itoa(terminnum, tempstring, 10));
     }
   }
   con_info->answerstring = pageBuffer;
@@ -187,7 +189,7 @@ int microhttp_answerToConnection(void * cls, struct MHD_Connection * connection,
   static char tempString[512] = "";
   static char tempString2[64] = "";
   static terminalinfo_t temptermin;
-  unsigned int terminnum;
+  uint16_t terminnum;
 
   if (NULL == *con_cls)
   {
@@ -280,8 +282,7 @@ int microhttp_answerToConnection(void * cls, struct MHD_Connection * connection,
             TerminalList_Get(&temptermin, i);
             snprintf(tempString, sizeof(tempString), oneTerminal,
                 itoa(temptermin.id, tempString2, 10),
-                temptermin.cardsSupported[0],
-                temptermin.cardsSupported[1],
+                temptermin.cardsSupported[0], temptermin.cardsSupported[1],
                 temptermin.cardsSupported[2],
                 temptermin.transactionsSupported[0],
                 temptermin.transactionsSupported[1],
@@ -292,7 +293,7 @@ int microhttp_answerToConnection(void * cls, struct MHD_Connection * connection,
           snprintf(pageBuffer, sizeof(pageBuffer), listTerminalPage,
               itoa(terminnum, tempString, 10), terminalListString);
         }
-        else if (0 == strcmp(url,"ask_id"))
+        else if (0 == strcmp(url, "ask_id"))
         {
           terminnum = TerminalList_GetNumber();
           snprintf(pageBuffer, sizeof(pageBuffer), askIdPage,
@@ -315,7 +316,7 @@ int microhttp_answerToConnection(void * cls, struct MHD_Connection * connection,
 
     if (0 != *upload_data_size)
     {
-      printf("\tUPLOAD size: %d\n", (unsigned int)*upload_data_size);
+      printf("\tUPLOAD size: %d\n", (unsigned int) *upload_data_size);
       MHD_post_process(con_info->postprocessor, upload_data, *upload_data_size);
       *upload_data_size = 0;
 
@@ -336,5 +337,4 @@ int microhttp_answerToConnection(void * cls, struct MHD_Connection * connection,
   }
   return MHD_NO;
 }
-
 
